@@ -3,122 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Simulación Juego de Dados</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      padding: 20px;
-      color: #222;
-    }
-
-    /* Layout principal */
-    .contenedor {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    /* Tarjetas base */
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      flex: 1; /* ambas ocupan mismo espacio */
-      min-width: 600px; /* nunca se encoje */
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Formulario */
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .botones {
-      margin-top: 20px;
-      text-align: center;
-    }
-    button {
-      padding: 12px 22px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s;
-    }
-    .btn-simular {
-      background: #28a745;
-      color: white;
-    }
-    .btn-simular:hover {
-      background: #218838;
-    }
-    .btn-limpiar {
-      background: #dc3545;
-      color: white;
-      margin-left: 10px;
-    }
-    .btn-limpiar:hover {
-      background: #c82333;
-    }
-
-    /* Tabla */
-    .tabla-scroll {
-      flex: 1;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 100%; /* se mantiene ancho aunque esté vacía */
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-      font-size: 14px;
-    }
-    th {
-      background: #007bff;
-      color: white;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    /* Promedios */
-    .resultado {
-      margin-top: 20px;
-      padding: 15px;
-      background: #fff3cd;
-      border: 1px solid #ffeeba;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    }
-  </style>
+  <link rel="stylesheet" href="css/dados.css">
 </head>
 <body>
   <h1>🎲 Simulación Juego de Dados</h1>
@@ -169,8 +54,8 @@
 
   <script>
     function validarInputs(simulaciones, juegos, precio, premio) {
-      if (simulaciones <= 0 || juegos <= 0 || precio <= 0 || premio <= 0) {
-        alert("⚠️ Todos los valores deben ser números positivos.");
+      if (simulaciones <= 1 || juegos <= 1 || precio <= 0 || premio <= 0) {
+        alert("⚠️ Todos los valores deben ser números positivos.(y la canitdad de simulaciones y juegos debe ser mayor q 0)");
         return false;
       }
       if (!Number.isInteger(simulaciones) || !Number.isInteger(juegos)) {
@@ -187,10 +72,14 @@
     }
 
     function simular() {
-      const simulaciones = parseInt(document.getElementById("simulaciones").value);
-      const juegos = parseInt(document.getElementById("numJuegos").value);
+      /*const simulaciones = parseInt(document.getElementById("simulaciones").value);
+      const juegos = parseInt(document.getElementById("numJuegos").value);*/
+      const sStr = document.getElementById("simulaciones").value;
+  const jStr = document.getElementById("numJuegos").value;
       const precio = parseFloat(document.getElementById("precio").value);
       const premio = parseFloat(document.getElementById("premio").value);
+        const simulaciones = Number(sStr);
+  const juegos = Number(jStr);
 
       if (!validarInputs(simulaciones, juegos, precio, premio)) return;
 
