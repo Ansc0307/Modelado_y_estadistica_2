@@ -4,11 +4,13 @@
       padding: 0;
       background: linear-gradient(135deg, #74ebd5, #ACB6E5,#ACB6E5, #74ebd5);
       color: #333;
+      overflow-x: hidden;
+
     }
     h1 {
       text-align: center;
       padding: 20px;
-      color: #222;
+      color: white;
     }
 
     /* Layout principal */
@@ -113,3 +115,36 @@
       text-align: center;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
+
+      nav {
+      background-color: #1a4f5c;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: flex-start;
+      gap: 20px;
+    }
+    nav a {
+      color: white; text-decoration: none; font-weight: bold;
+    }
+    nav a:hover { text-decoration: underline; }
+
+html, body {
+  height: 100%;              /* ocupan toda la pantalla */
+  display: flex;             
+  flex-direction: column;    /* apila vertical */
+}
+
+.contenedor {
+  flex: 1;                   /* ocupa el espacio disponible y empuja el footer */
+}
+
+/* footer */
+footer {
+  text-align: center;
+  padding: 12px;
+  background: #1a4f5c;
+  color: white;
+  font-size: 0.9rem;
+  width: 100%;
+  margin: 0;
+}

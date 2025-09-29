@@ -6,6 +6,13 @@
   <link rel="stylesheet" href="css/dados.css">
 </head>
 <body>
+      <nav>
+    <a href="index.html">Inicio</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Articulos</a>
+    <!--<a href="aditivo.html">Aditivo</a>-->
+  </nav>
+
   <h1>🎲 Simulación Juego de Dados</h1>
   
   <div class="contenedor">
@@ -52,10 +59,14 @@
     </div>
   </div>
 
+     <footer>
+    2025 Generadores Numeros Aleatorios - Ayana Siegle
+  </footer>
+
   <script>
     function validarInputs(simulaciones, juegos, precio, premio) {
       if (simulaciones <= 1 || juegos <= 1 || precio <= 0 || premio <= 0) {
-        alert("⚠️ Todos los valores deben ser números positivos.(y la canitdad de simulaciones y juegos debe ser mayor q 0)");
+        alert("⚠️ Todos los valores deben ser números positivos.(La canitdad de simulaciones y juegos debe ser mayor q 0)");
         return false;
       }
       if (!Number.isInteger(simulaciones) || !Number.isInteger(juegos)) {

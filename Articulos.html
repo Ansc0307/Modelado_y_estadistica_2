@@ -6,10 +6,19 @@
   <link rel="stylesheet" href="css/tienda.css">
 </head>
 <body>
+    <nav>
+    <a href="index.html">Inicio</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Articulos</a>
+    <!--<a href="aditivo.html">Aditivo</a>-->
+  </nav>
+
   <h1>Simulación de Tienda 🏪</h1>
   <div class="container">
     <!-- Panel de entrada -->
+     
     <div class="panel">
+        <h2>⚙️ Parámetros</h2>
       <label for="simulations">Número de simulaciones:</label>
       <input type="number" id="simulations" min="1" required>
       
@@ -43,6 +52,7 @@
     
     <!-- Panel de resultados -->
     <div class="table-container">
+        <h2>📋 Resultados</h2>
       <div class="scroll">
         <table id="resultsTable">
           <thead>
@@ -60,6 +70,10 @@
       </div>
     </div>
   </div>
+
+   <footer>
+    2025 Generadores Numeros Aleatorios - Ayana Siegle
+  </footer>
 
   <script>
     function simulateOnce(hours, costFixed, costArticle, priceArticle, probs) {
@@ -109,8 +123,8 @@
         alert("Todos los campos deben ser números.");
         return;
       }
-      if (hours <= 0 || simulations <= 0 || costFixed <= 0 || costArticle <= 0 || priceArticle <= 0) {
-        alert("Todos los valores deben ser positivos.");
+      if (hours <= 1 || simulations <= 1 || costFixed <= 0 || costArticle <= 0 || priceArticle <= 0) {
+        alert("Todos los valores deben ser positivos.(La canitdad de simulaciones y horas debe ser mayor q 0)");
         return;
       }
       if (!Number.isInteger(hours) || !Number.isInteger(simulations)) {
