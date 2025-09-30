@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Simulación Granja - Huevos y Pollos</title>
+ <link rel="stylesheet" href="css/huevo.css">
+
+</head>
+<body>
+
+ <nav>
+    <a href="index.html">Inicio</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Articulos</a>
+    <a href="Huevos.html">Huevos</a>
+  </nav>
+<main>
+  <h1>Simulador Granjero — Huevos y Pollos 🐣</h1>
+
+  <div class="layout">
+    <!-- Panel de entradas -->
+    <div class="card panel">
+      <h3>Parámetros</h3>
+
+      <label>Nº simulaciones</label>
+      <input id="inputSim" type="number" min="1" value="50" />
+
+      <label>Nº días por simulación</label>
+      <input id="inputDays" type="number" min="1" value="300" />
+
+      <label>Media Poisson (λ) huevos/día</label>
+      <input id="inputLambda" type="number" min="0.0001" step="0.1" value="2" />
+
+      <div class="row">
+        <div class="small">
+          <label>Precio por huevo</label>
+          <input id="inputEggPrice" type="number" min="0" step="0.01" value="2" />
+        </div>
+        <div class="small">
+          <label>Precio por pollo </label>
+          <input id="inputChickPrice" type="number" min="0" step="0.01" value="30" />
+        </div>
+      </div>
+
+      <h4 style="margin-top:12px;">Probabilidades por huevo (deben sumar 1)</h4>
+      <div class="row">
+        <div class="small">
+          <label>% huevo roto</label>
+          <input id="pBroken" type="number" step="0.01" min="0" max="1" value="0.2" />
+        </div>
+        <div class="small">
+          <label>% nace un pollo</label>
+          <input id="pHatch" type="number" step="0.01" min="0" max="1" value="0.3" />
+        </div>
+      </div>
+      <label>% queda como huevo</label>
+      <input id="pRemain" type="number" step="0.01" min="0" max="1" value="0.5" />
+
+      <h4 style="margin-top:12px;">Probabilidades para pollos (deben sumar 1)</h4>
+      <div class="row">
+        <div class="small">
+          <label>% muere</label>
+          <input id="pDie" type="number" step="0.01" min="0" max="1" value="0.2" />
+        </div>
+        <div class="small">
+          <label>% sobrevive</label>
+          <input id="pSurvive" type="number" step="0.01" min="0" max="1" value="0.8" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="run">Simular</button>
+        <button id="clear">Limpiar</button>
+      </div>
+
+      <div id="errorMsg" class="error" style="display:none;"></div>
+
+      <!--<div class="small-note">
+        Nota: para la generación diaria de huevos se usa la tabla de Poisson (PMF) y sus intervalos acumulados
+        (se muestra abajo). La simulación usa esos intervalos para elegir el nº de huevos por día.
+      </div>-->
+    </div>
+
+    <!-- Panel resultados -->
+    <div class="card results">
+      <h3>Resultados por simulación</h3>
+
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Simulación</th>
+              <th>Ingreso neto total ($)</th>
+              <th>Ingreso promedio diario ($)</th>
+              <th>Huevos que permanecen</th>
+              <th>Huevos rotos</th>
+              <th>Pollos sobreviven</th>
+              <th>Pollos mueren</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7">Sin datos — presiona <b>Simular</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="globalSummary" class="summary">
+        Promedios generales: Ingreso total promedio = 0 $, Ingreso diario promedio = 0 $, Huevos quedan = 0, Huevos rotos = 0, Pollos sobreviven = 0, Pollos mueren = 0
+      </div>
+
+            <div class="poisson-card" id="poissonBlock">
+        <h4>Tabla Poisson (intervalos) — λ = <span id="lambdaVal">-</span></h4>
+        <div style="margin-bottom:8px; font-size:14px; color:#333;">
+          Fórmula: <b>P(X=k) = (e<sup>-λ</sup> · λ<sup>k</sup>) / k!</b>
+        </div>
+        <div style="max-height:200px; overflow:auto; border-radius:6px; border:1px solid #eee;">
+          <table id="poissonTable" style="min-width:520px; margin:0;">
+            <thead>
+              <tr>
+                <th>k</th>
+                <th>PMF P(X=k)</th>
+                <th>Cum.acumulada</th>
+                <th>Intervalo (r)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4">Sin calcular</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</main>
+
+<footer>© Simulación Granja — generado localmente</footer>
+
+<script>
+/* ===== util factorial y poisson pmf ===== */
+function factorial(n){
+  if(n < 0) return NaN;
+  if(n === 0) return 1;
+  let res = 1;
+  for(let i=1;i<=n;i++) res *= i;
+  return res;
+}
+function poissonPMF(lambda,k){
+  // usar fórmula: e^-λ * λ^k / k!
+  return Math.exp(-lambda) * Math.pow(lambda, k) / factorial(k);
+}
+
+/* ===== construir tabla Poisson hasta cubrir masa >= tol (ej. 0.9999) ===== */
+function buildPoissonTable(lambda, tol = 0.9999, maxK=200){
+  const rows = [];
+  let cumulative = 0;
+  let k = 0;
+  while (cumulative < tol && k <= maxK){
+    const pmf = poissonPMF(lambda, k);
+    cumulative += pmf;
+    rows.push({k, pmf, cumulative});
+    k++;
+    // safety: si pmf se vuelve 0 por underflow, romper
+    if(pmf === 0 && k>Math.ceil(lambda+10*Math.sqrt(lambda||1))) break;
+  }
+  // Normalize last cumulative to 1 if tiny tail remains
+  if(cumulative < 1 && rows.length > 0){
+    rows[rows.length-1].pmf += (1 - cumulative);
+    rows[rows.length-1].cumulative = 1;
+    cumulative = 1;
+  }
+  return rows;
+}
+
+/* ===== muestreo usando intervalos acumulados (inversa) ===== */
+function sampleFromIntervals(rows){
+  const r = Math.random();
+  for(const row of rows){
+    if(r <= row.cumulative) return row.k;
+  }
+  // fallback
+  return rows[rows.length-1].k;
+}
+
+/* ===== validaciones de entradas ===== */
+function validateInputs(values){
+  const err = [];
+  if(!Number.isInteger(values.sim) || values.sim <= 0) err.push("Nº simulaciones debe ser entero positivo.");
+  if(!Number.isInteger(values.days) || values.days <= 0) err.push("Nº días debe ser entero positivo.");
+  if(!(values.lambda > 0)) err.push("Lambda (media Poisson) debe ser > 0.");
+  if(!(values.eggPrice >= 0) || !(values.chickPrice >= 0)) err.push("Los precios deben ser >= 0.");
+  // probabilidades
+  const sumEgg = Number(values.pBroken) + Number(values.pHatch) + Number(values.pRemain);
+  if(Math.abs(sumEgg - 1) > 1e-6) err.push("La suma de probabilidades de estado del huevo debe ser 1.");
+  const sumChick = Number(values.pDie) + Number(values.pSurvive);
+  if(Math.abs(sumChick - 1) > 1e-6) err.push("La suma de probabilidades del pollo (muere/sobrevive) debe ser 1.");
+  return err;
+}
+
+/* ===== evento simular ===== */
+document.getElementById("run").addEventListener("click", () => {
+  // leer inputs
+  const sim = parseInt(document.getElementById("inputSim").value,10);
+  const days = parseInt(document.getElementById("inputDays").value,10);
+  const lambda = parseFloat(document.getElementById("inputLambda").value);
+  const eggPrice = parseFloat(document.getElementById("inputEggPrice").value);
+  const chickPrice = parseFloat(document.getElementById("inputChickPrice").value);
+  const pBroken = parseFloat(document.getElementById("pBroken").value);
+  const pHatch = parseFloat(document.getElementById("pHatch").value);
+  const pRemain = parseFloat(document.getElementById("pRemain").value);
+  const pDie = parseFloat(document.getElementById("pDie").value);
+  const pSurvive = parseFloat(document.getElementById("pSurvive").value);
+
+  const values = {sim, days, lambda, eggPrice, chickPrice, pBroken, pHatch, pRemain, pDie, pSurvive};
+  const errs = validateInputs(values);
+  const errDiv = document.getElementById("errorMsg");
+  if(errs.length){
+    errDiv.style.display = "block";
+    errDiv.textContent = errs.join(" ");
+    return;
+  } else {
+    errDiv.style.display = "none";
+    errDiv.textContent = "";
+  }
+
+  // construir tabla poisson
+  const poissonRows = buildPoissonTable(lambda, 0.999999, 500);
+  // comprobar que la masa sea ~1
+  const lastCum = poissonRows.length ? poissonRows[poissonRows.length-1].cumulative : 0;
+  if(lastCum < 0.9999){
+    errDiv.style.display = "block";
+    errDiv.textContent = "Advertencia: la tabla Poisson no cubre suficiente probabilidad (λ grande). Ajusta λ o aumenta el límite.";
+    // No interrumpimos: igual mostramos la tabla y simulamos con lo construido.
+  } else {
+    errDiv.style.display = "none";
+  }
+
+  // mostrar tabla poisson
+  document.getElementById("lambdaVal").textContent = lambda.toFixed(3);
+  const ptbody = document.querySelector("#poissonTable tbody");
+  ptbody.innerHTML = "";
+ for(const r of poissonRows){
+  const pmf = r.pmf;
+  const cum = r.cumulative;
+  const low = (cum - pmf).toFixed(2);
+  const high = cum.toFixed(2);
+
+  // 🚫 no mostrar filas con intervalo [1.00, 1.00]
+  if(low === "1.00" && high === "1.00") break;
+
+  const tr = `<tr>
+    <td>${r.k}</td>
+    <td>${pmf.toFixed(2)}</td>
+    <td>${cum.toFixed(2)}</td>
+    <td>[${low}, ${high}]</td>
+  </tr>`;
+  ptbody.insertAdjacentHTML("beforeend", tr);
+
+  // 👉 detenernos cuando la acumulada llega a 1 (con tolerancia)
+  if (Math.abs(cum - 1) < 1e-6) break;
+}
+
+
+
+  // limpiar tabla resultados previo
+  const tbody = document.querySelector("#resultsTable tbody");
+  tbody.innerHTML = "";
+
+  // acumuladores globales para promedios
+  let sumTotalIncome = 0;
+  let sumDailyAvg = 0;
+  let sumEggRemain = 0;
+  let sumEggBroken = 0;
+  let sumChickAlive = 0;
+  let sumChickDead = 0;
+
+  // para cada simulación
+  for(let s = 1; s <= sim; s++){
+    let totalEggRemain = 0;
+    let totalEggBroken = 0;
+    let totalChickAlive = 0;
+    let totalChickDead = 0;
+    // simular días
+    for(let d = 0; d < days; d++){
+      // sacar numero de huevos por día usando la tabla de Poisson
+      const eggsToday = sampleFromIntervals(poissonRows);
+      // para cada huevo decidir estado
+      for(let e = 0; e < eggsToday; e++){
+        const r = Math.random();
+        if(r < pBroken){
+          totalEggBroken++;
+        } else if (r < pBroken + pHatch){
+          // nace un pollo -> decidir si sobrevive
+          const r2 = Math.random();
+          if(r2 < pDie) totalChickDead++;
+          else totalChickAlive++;
+        } else {
+          totalEggRemain++;
+        }
+      }
+    }
+
+    // calcular ingresos (no se han pedido costos fijos en este problema)
+    const income = (totalEggRemain * eggPrice) + (totalChickAlive * chickPrice);
+    const avgDailyIncome = income / days;
+
+    // añadir fila resultado
+    const row = `<tr>
+      <td>${s}</td>
+      <td>${income.toFixed(2)}</td>
+      <td>${avgDailyIncome.toFixed(2)}</td>
+      <td>${totalEggRemain}</td>
+      <td>${totalEggBroken}</td>
+      <td>${totalChickAlive}</td>
+      <td>${totalChickDead}</td>
+    </tr>`;
+    tbody.insertAdjacentHTML("beforeend", row);
+
+    // acumular para promedios generales
+    sumTotalIncome += income;
+    sumDailyAvg += avgDailyIncome;
+    sumEggRemain += totalEggRemain;
+    sumEggBroken += totalEggBroken;
+    sumChickAlive += totalChickAlive;
+    sumChickDead += totalChickDead;
+  }
+
+  // mostrar promedios generales
+  const globalSim = sim;
+  const gTotalAvg = (sumTotalIncome / globalSim).toFixed(2);
+  const gDailyAvg = (sumDailyAvg / globalSim).toFixed(2);
+  const gEggRemain = (sumEggRemain / globalSim).toFixed(2);
+  const gEggBroken = (sumEggBroken / globalSim).toFixed(2);
+  const gChickAlive = (sumChickAlive / globalSim).toFixed(2);
+  const gChickDead = (sumChickDead / globalSim).toFixed(2);
+
+  document.getElementById("globalSummary").textContent =
+    `Promedios generales (por simulación): Ingreso total promedio = ${gTotalAvg} $, Ingreso diario promedio = ${gDailyAvg} $, Huevos que permanecen = ${gEggRemain}, Huevos rotos = ${gEggBroken}, Pollos sobreviven = ${gChickAlive}, Pollos mueren = ${gChickDead}`;
+});
+
+/* ===== limpiar campos y resultados ===== */
+document.getElementById("clear").addEventListener("click", () => {
+  // reset a valores por defecto
+  document.getElementById("inputSim").value = "100";
+  document.getElementById("inputDays").value = "30";
+  document.getElementById("inputLambda").value = "1";
+  document.getElementById("inputEggPrice").value = "2";
+  document.getElementById("inputChickPrice").value = "5";
+  document.getElementById("pBroken").value = "0.2";
+  document.getElementById("pHatch").value = "0.3";
+  document.getElementById("pRemain").value = "0.5";
+  document.getElementById("pDie").value = "0.2";
+  document.getElementById("pSurvive").value = "0.8";
+
+  document.querySelector("#resultsTable tbody").innerHTML = `<tr><td colspan="7">Sin datos — presiona <b>Simular</b></td></tr>`;
+  document.getElementById("globalSummary").textContent =
+    "Promedios generales: Ingreso total promedio = 0 $, Ingreso diario promedio = 0 $, Huevos quedan = 0, Hueos rotos = 0, Pollos sobreviven = 0, Pollos mueren = 0";
+  document.querySelector("#poissonTable tbody").innerHTML = `<tr><td colspan="4">Sin calcular</td></tr>`;
+  document.getElementById("lambdaVal").textContent = "-";
+  document.getElementById("errorMsg").style.display = "none";
+});
+</script>
+</body>
+</html>
