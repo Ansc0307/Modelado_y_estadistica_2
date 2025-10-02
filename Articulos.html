@@ -15,42 +15,71 @@
     <a href="Huevos.html">Huevos</a>
     <a href="Azucar.html">Azúcar</a>
   </nav>
+
+
   <h1>🏪 Simulación de Tienda </h1>
+    <main class="container">
   <div class="container">
     <!-- Panel de entrada -->
      
-    <div class="panel">
-        <h2>⚙️ Parámetros</h2>
-      <label for="simulations">Número de simulaciones:</label>
-      <input type="number" id="simulations" min="1" required>
-      
-        <label for="hours">Número de horas:</label>
-      <input type="number" id="hours" min="1" required>
-      
-      <label for="costFixed">Costo fijo diario (Bs):</label>
-      <input type="number" id="costFixed" min="1" value="300" required>
-      
-      <label for="costArticle">Costo por artículo (Bs):</label>
-      <input type="number" id="costArticle" min="1" value="50" required>
-      
-      <label for="priceArticle">Precio de venta por artículo (Bs):</label>
-      <input type="number" id="priceArticle" min="1" value="75" required>
-      
-      <h3>Probabilidades de compra de artículos</h3>
-      <label>Artículos 0:</label>
+   <div class="panel">
+  <h2>⚙️ Parámetros</h2>
+
+  <div class="input-group">
+    <label for="simulations">N° simulaciones</label>
+    <input type="number" id="simulations" min="1" required>
+  </div>
+
+  <div class="input-group">
+    <label for="hours">N° horas</label>
+    <input type="number" id="hours" min="1" required>
+  </div>
+
+  <div class="input-group">
+    <label for="costFixed">Costo fijo diario (Bs)</label>
+    <input type="number" id="costFixed" min="1" value="300" required>
+  </div>
+
+  <div class="input-group">
+    <label for="costArticle">Costo por artículo (Bs)</label>
+    <input type="number" id="costArticle" min="1" value="50" required>
+  </div>
+
+  <div class="input-group">
+    <label for="priceArticle">Precio de venta por artículo (Bs)</label>
+    <input type="number" id="priceArticle" min="1" value="75" required>
+  </div>
+
+  <h3>Probabilidades de compra de artículos <small>(deben sumar 1)</small></h3>
+
+  <div class="row">
+    <div class="input-group">
+      <label for="p0">Artículos 0</label>
       <input type="number" step="0.01" id="p0" value="0.2" min="0" max="1" required>
-      <label>Artículos 1:</label>
-      <input type="number" step="0.01" id="p1" value="0.3" min="0" max="1" required>
-      <label>Artículos 2:</label>
-      <input type="number" step="0.01" id="p2" value="0.4" min="0" max="1" required>
-      <label>Artículos 3:</label>
-      <input type="number" step="0.01" id="p3" value="0.1" min="0" max="1" required>
-      
-      <div class="btn-group">
-        <button id="simulate">Simular</button>
-        <button id="clear">Limpiar</button>
-      </div>
     </div>
+    <div class="input-group">
+      <label for="p1">Artículos 1</label>
+      <input type="number" step="0.01" id="p1" value="0.3" min="0" max="1" required>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-group">
+      <label for="p2">Artículos 2</label>
+      <input type="number" step="0.01" id="p2" value="0.4" min="0" max="1" required>
+    </div>
+    <div class="input-group">
+      <label for="p3">Artículos 3</label>
+      <input type="number" step="0.01" id="p3" value="0.1" min="0" max="1" required>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button id="simulate">Simular</button>
+    <button id="clear">Limpiar</button>
+  </div>
+</div>
+
     
     <!-- Panel de resultados -->
     <div class="table-container">
@@ -76,10 +105,8 @@
 
     </div>
   </div>
-
-   <footer>
-    2025 Generadores Numeros Aleatorios - Ayana Siegle
-  </footer>
+</main>
+   <footer>© 2025 - Simulación de Articulos de Tienda</footer>
 
   <script>
     function simulateOnce(hours, costFixed, costArticle, priceArticle, probs) {

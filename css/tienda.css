@@ -1,9 +1,30 @@
 body {
   font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #74ebd5, #ACB6E5, #ACB6E5, #74ebd5);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+
+/* Configuramos body para ocupar toda la altura */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* altura mínima de 100% de la ventana */
+  font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #74ebd5, #ACB6E5,#ACB6E5, #74ebd5);
   margin: 0;
-  padding: 0; /* 🔹 quitamos el espacio del body */
-  overflow-x: hidden;
+  padding: 0;
+}
+
+/* Contenedor principal de contenido */
+main {
+  flex: 1; /* esto hace que main ocupe todo el espacio disponible */
+  display: flex; /* si quieres mantener tus paneles y tabla uno al lado del otro */
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
 }
 
 h1 {
@@ -12,19 +33,18 @@ h1 {
   color: white;
 }
 
-
 .container {
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 10px; /* 🔹 si quieres espacio interno solo en el contenido */
+  padding: 10px;
 }
 
 .panel {
   background: white;
-  padding: 1%;
+  padding: 16px 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   flex: 1;
   min-width: 350px;
   max-width: 450px;
@@ -33,41 +53,49 @@ h1 {
 label {
   font-weight: bold;
   display: block;
-  margin: 10px 0 5px;
+  margin-bottom: 4px;
 }
 
 input {
-  width: 98%;
-  padding: 8px;
+  width: 100%;
+  padding: 6px 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   margin-bottom: 10px;
+  font-size: 14px;
 }
 
 .btn-group {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 button {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   border: none;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  font-size: 14px;
 }
 
-button#simulate { background: #28a745; color: white; }
-button#clear { background: #dc3545; color: white; }
+button#simulate {
+  background: #28a745;
+  color: white;
+}
+button#clear {
+  background: #dc3545;
+  color: white;
+}
 
 .table-container {
   flex: 2;
   background: white;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   height: 500px;
@@ -107,7 +135,6 @@ th {
   font-weight: bold;
 }
 
-/* 🔹 Barra de navegación ocupa todo */
 nav {
   background-color: #1a4f5c;
   padding: 12px 20px;
@@ -115,7 +142,7 @@ nav {
   justify-content: flex-start;
   gap: 20px;
   width: 100%;
-  margin: 0; /* aseguramos que no se separe */
+  margin: 0;
 }
 
 nav a {
@@ -123,10 +150,10 @@ nav a {
   text-decoration: none;
   font-weight: bold;
 }
+nav a:hover {
+  text-decoration: underline;
+}
 
-nav a:hover { text-decoration: underline; }
-
-/* 🔹 Footer ocupa todo */
 footer {
   text-align: center;
   padding: 12px;
@@ -139,23 +166,40 @@ footer {
 
 .summary-box {
   margin-top: 16px;
-  padding: 16px;
+  padding: 12px;
   background-color: #fff5cc;
   border: 1px solid #ccc;
   border-radius: 10px;
   text-align: center;
   color: #333;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .summary-box h2 {
   margin-top: 0;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .summary-box .icon {
-  font-size: 22px;
+  font-size: 20px;
   margin-right: 6px;
 }
 
+/* Estilos para campos en filas */
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
 
+.row .input-group {
+  flex: 1;
+  min-width: 120px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 6px;
+}
