@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Depósito a Plazo Fijo </title>
+  <link rel="stylesheet" href="css/interes.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+     <a href="Interes.html">Interes Fijo</a>
+    <a href="InteresVar.html">Interes Variable</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Tienda</a>
+    <a href="Huevos.html">Huevos</a>
+    <a href="Azucar.html">Azúcar</a>
+  </nav>
+
+  <main>
+    <h1>💲 Depósito a Plazo Fijo </h1>
+    <div class="layout">
+      <!-- Panel entradas -->
+      <div class="card panel">
+        <h2>⚙️ Parámetros</h2>
+        <label>Capital inicial (K):</label>
+        <input type="number" id="capital" value="10000" step="any">
+
+        <label>Tasa de interés:</label>
+        <input type="number" id="tasa" value="0.035" step="any">
+
+        <label>Número de plazos:</label>
+        <input type="number" id="plazo" value="10" step="1">
+
+        <div class="actions">
+          <button id="run" onclick="calcular()">Calcular</button>
+          <button id="clear" onclick="limpiar()">Limpiar</button>
+        </div>
+        <div id="errors" class="error"></div>
+      </div>
+
+      <!-- Resultados -->
+      <div class="card results">
+        <h2>📋 Resultados</h2>
+        <div class="table-wrap">
+          <table id="tabla">
+            <thead>
+              <tr>
+                <th>Plazo</th>
+                <th>Capital Inicial</th>
+                <th>Interés aplicado</th>
+                <th>Interés ganado</th>
+                <th>Capital Final</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Resumen debajo de la tabla -->
+        <div class="summary-box" id="resumen">
+          <h2>📈 Resumen</h2>
+          <p>El capital final se mostrará aquí.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 - Depósito a Plazo Fijo
+  </footer>
+
+  <script>
+    function validate(v){
+      const errs=[];
+      if(!(typeof v.capital === "number" && v.capital > 0)) errs.push("⚠️ El capital inicial debe ser positivo.");
+      if(!(typeof v.tasa === "number" && v.tasa > 0)) errs.push("⚠️ La tasa debe ser positiva.");
+      if(!(Number.isInteger(v.plazo) && v.plazo > 0)) errs.push("⚠️ El plazo debe ser un entero positivo.");
+      return errs;
+    }
+
+    function calcular(){
+      const values={
+        capital:Number(document.getElementById("capital").value),
+        tasa:Number(document.getElementById("tasa").value),
+        plazo:Number(document.getElementById("plazo").value)
+      };
+
+      const errs=validate(values);
+      const errBox=document.getElementById("errors");
+      errBox.innerHTML="";
+      if(errs.length){
+        errBox.innerHTML=errs.join("<br>");
+        return;
+      }
+
+      let K = values.capital;
+      const tbody=document.querySelector("#tabla tbody");
+      tbody.innerHTML="";
+
+      for(let c=1; c<=values.plazo; c++){
+        const I = K * values.tasa;
+        const Kfinal = K + I;
+
+        tbody.innerHTML += `<tr ${c===values.plazo ? 'style="background:#fff5cc;font-weight:bold;"' : ''}>
+          <td>${c}</td>
+          <td>${K.toFixed(2)}</td>
+          <td>${(values.tasa*100).toFixed(2)}%</td>
+          <td>${I.toFixed(2)}</td>
+          <td>${Kfinal.toFixed(2)}</td>
+        </tr>`;
+
+        K = Kfinal;
+      }
+
+      document.getElementById("resumen").innerHTML = `
+        <h2>📈 Resumen</h2>
+        <p>Con un capital inicial de <strong>${values.capital.toFixed(2)}</strong> a una tasa de 
+        <strong>${(values.tasa*100).toFixed(2)}%</strong> durante <strong>${values.plazo}</strong> plazos,<br>
+        el capital final es: <strong>${K.toFixed(2)}</strong></p>
+      `;
+    }
+
+    function limpiar(){
+      document.getElementById("capital").value="";
+      document.getElementById("tasa").value="";
+      document.getElementById("plazo").value="";
+      document.querySelector("#tabla tbody").innerHTML="";
+      document.getElementById("resumen").innerHTML="<h2>Resumen</h2><p>El capital final se mostrará aquí.</p>";
+      document.getElementById("errors").innerHTML="";
+    }
+  </script>
+</body>
+</html>

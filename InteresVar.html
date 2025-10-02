@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Depósito con Intereses Variables</title>
+  <link rel="stylesheet" href="css/interesVar.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+     <a href="Interes.html">Interes Fijo</a>
+    <a href="InteresVar.html">Interes Variable</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Tienda</a>
+    <a href="Huevos.html">Huevos</a>
+    <a href="Azucar.html">Azúcar</a>
+  </nav>
+
+  <main>
+    <h1>💰 Depósito con Interes Variable </h1>
+    <div class="layout">
+      <!-- Panel entradas -->
+      <div class="card panel">
+        <h2>⚙️ Parámetros</h2>
+        <label>Capital inicial (K):</label>
+        <input type="number" id="capital" value="9000" step="any">
+
+        <label>Número de plazos (t):</label>
+        <input type="number" id="plazo" value="10" step="1">
+
+        <h3>Intereses por tramos de capital</h3>
+        <label>Tramo 1: límite superior (ej: 10000)</label>
+        <input type="number" id="lim1" value="10000" step="any">
+        <label>Interés 1 (ej: 0.035)</label>
+        <input type="number" id="i1" value="0.035" step="any">
+
+        <label>Tramo 2: límite superior (ej: 100000)</label>
+        <input type="number" id="lim2" value="100000" step="any">
+        <label>Interés 2 (ej: 0.037)</label>
+        <input type="number" id="i2" value="0.037" step="any">
+
+        <label>Interés 3 (para capital > límite 2, ej: 0.04)</label>
+        <input type="number" id="i3" value="0.04" step="any">
+
+        <div class="actions">
+          <button id="run" onclick="calcular()">Calcular</button>
+          <button id="clear" onclick="limpiar()">Limpiar</button>
+        </div>
+        <div id="errors" class="error"></div>
+      </div>
+
+      <!-- Resultados -->
+      <div class="card results">
+        <h2>📋 Resultados</h2>
+        <div class="table-wrap">
+          <table id="tabla">
+            <thead>
+              <tr>
+                <th>Plazo</th>
+                <th>Capital Inicial</th>
+                <th>Interés aplicado</th>
+                <th>Interés ganado</th>
+                <th>Capital Final</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Resumen -->
+        <div class="summary-box" id="resumen">
+          <h2>📈 Resumen</h2>
+          <p>El capital final se mostrará aquí.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 - Depósito con Intereses Variables
+  </footer>
+
+  <script>
+    function validate(v){
+      const errs=[];
+      if(!(typeof v.capital === "number" && v.capital > 0)) errs.push("⚠️ El capital inicial debe ser positivo.");
+      if(!(Number.isInteger(v.plazo) && v.plazo > 0)) errs.push("⚠️ El plazo debe ser un entero positivo.");
+      if(v.lim1 <= 0 || v.lim2 <= 0) errs.push("⚠️ Los límites deben ser positivos.");
+      if(!(v.i1>0 && v.i2>0 && v.i3>0)) errs.push("⚠️ Todos los intereses deben ser positivos.");
+      if(v.lim2 <= v.lim1) errs.push("⚠️ El límite 2 debe ser mayor que el límite 1.");
+      return errs;
+    }
+
+    function calcular(){
+      const values = {
+        capital:Number(document.getElementById("capital").value),
+        plazo:Number(document.getElementById("plazo").value),
+        lim1:Number(document.getElementById("lim1").value),
+        lim2:Number(document.getElementById("lim2").value),
+        i1:Number(document.getElementById("i1").value),
+        i2:Number(document.getElementById("i2").value),
+        i3:Number(document.getElementById("i3").value)
+      };
+
+      const errs = validate(values);
+      const errBox = document.getElementById("errors");
+      errBox.innerHTML="";
+      if(errs.length){ errBox.innerHTML=errs.join("<br>"); return; }
+
+      let K = values.capital;
+      let tbody=document.querySelector("#tabla tbody");
+      tbody.innerHTML="";
+
+      for(let c=1; c<=values.plazo; c++){
+        let tramoInteres = 0;
+        if(K <= values.lim1) tramoInteres = values.i1;
+        else if(K <= values.lim2) tramoInteres = values.i2;
+        else tramoInteres = values.i3;
+
+        let I = K * tramoInteres;
+        let Kfinal = K + I;
+
+        tbody.innerHTML += `<tr>
+          <td>${c}</td>
+          <td>${K.toFixed(2)}</td>
+          <td>${(tramoInteres*100).toFixed(2)}%</td>
+          <td>${I.toFixed(2)}</td>
+          <td><strong>${Kfinal.toFixed(2)}</strong></td>
+        </tr>`;
+
+        K = Kfinal;
+      }
+
+      // Resumen
+      document.getElementById("resumen").innerHTML = `
+        <h2>📈 Resumen</h2>
+        <p>Con un capital inicial de <strong>${values.capital.toFixed(2)}</strong> durante <strong>${values.plazo}</strong> plazos,<br>
+        aplicando los intereses según los tramos definidos,<br>
+        el capital final es: <strong>${K.toFixed(2)}</strong></p>
+      `;
+    }
+
+    function limpiar(){
+      document.getElementById("capital").value="9000";
+      document.getElementById("plazo").value="10";
+      document.getElementById("lim1").value="10000";
+      document.getElementById("lim2").value="100000";
+      document.getElementById("i1").value="0.035";
+      document.getElementById("i2").value="0.037";
+      document.getElementById("i3").value="0.04";
+      document.querySelector("#tabla tbody").innerHTML="";
+      document.getElementById("resumen").innerHTML="<h2>Resumen</h2><p>El capital final se mostrará aquí.</p>";
+      document.getElementById("errors").innerHTML="";
+    }
+  </script>
+</body>
+</html>

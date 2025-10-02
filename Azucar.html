@@ -1,0 +1,273 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulación Inventario - Azúcar</title>
+  <link rel="stylesheet" href="css/azucar.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+     <a href="Interes.html">Interes Fijo</a>
+    <a href="InteresVar.html">Interes Variable</a>
+    <a href="Dados.html">Dados</a>
+    <a href="Articulos.html">Tienda</a>
+    <a href="Huevos.html">Huevos</a>
+    <a href="Azucar.html">Azúcar</a>
+  </nav>
+  <main>
+    <h1>📦 Simulador Inventario de Azúcar</h1>
+    <div class="layout">
+      <!-- Panel parámetros -->
+      <div class="card panel">
+        <h3>⚙️ Parámetros</h3>
+        <label>Nº simulaciones</label>
+        <input id="inputSim" type="number" min="1" value="50" />
+        <label>Días a simular</label>
+        <input id="inputDays" type="number" min="1" value="60" />
+        <label>Capacidad bodega (Kg)</label>
+        <input id="inputCap" type="number" min="1" value="700" />
+        <div class="row">
+          <div class="small">
+            <label>Costo ordenar (Bs)</label>
+            <input id="inputCord" type="number" min="0" step="0.01" value="100" />
+          </div>
+          <div class="small">
+            <label>Costo inventario/Kg</label>
+            <input id="inputCui" type="number" min="0" step="0.01" value="0.1" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="small">
+            <label>Costo adquisición/Kg</label>
+            <input id="inputCua" type="number" min="0" step="0.01" value="3.5" />
+          </div>
+          <div class="small">
+            <label>Precio venta/Kg</label>
+            <input id="inputPuv" type="number" min="0" step="0.01" value="5" />
+          </div>
+        </div>
+        <label>Media exponencial (Kg/día)</label>
+        <input id="inputLambda" type="number" min="0.0001" step="0.1" value="100" />
+        <div class="row">
+          <div class="small">
+            <label>Días revisión inventario</label>
+            <input id="inputReview" type="number" min="1" value="7" />
+          </div>
+          <div class="small">
+            <label>Entrega uniforme [min,max]</label>
+            <input id="inputUniformMin" type="number" min="1" value="1" />
+            <input id="inputUniformMax" type="number" min="1" value="3" />
+          </div>
+        </div>
+        <div class="actions">
+          <button id="run">Simular</button>
+          <button id="clear">Limpiar</button>
+        </div>
+        <div id="errorMsg" class="error" style="display:none;"></div>
+      </div>
+
+      <!-- Panel resultados -->
+      <div class="card results">
+        <h3>📋 Resultados</h3>
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>Simulación</th>
+                <th>Costo Total</th>
+                <th>Ganancia Neta</th>
+                <th>Demanda Insatisfecha</th>
+                <th>Costo Adquisición</th>
+                <th>Costo Inventario</th>
+                <th>Costo Órdenes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7">Sin datos — presiona <b>Simular</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="globalSummary" class="summary-box" style="display:none;">
+          <h2>📊 Promedios Generales</h2>
+          <p id="avgCTOT"></p>
+          <p id="avgGNETA"></p>
+          <p id="avgDIT"></p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>© Simulación Inventario de Azúcar — generado localmente</footer>
+
+  <script>
+    // Demanda exponencial: media = lambda
+    function expDemand(mean){
+      const u = Math.random();
+      return -mean * Math.log(1 - u);
+    }
+    // Uniforme discreta entre min y max
+    function uniformInt(min, max){
+      return Math.floor(min + Math.random()*(max-min+1));
+    }
+
+function validate(v) {
+  const errs = [];
+
+  // Helper para validar enteros positivos
+  function isPosInt(n) {
+    return Number.isInteger(n) && n > 0;
+  }
+
+  // Helper para validar números positivos (decimales incluidos)
+  function isPosNumber(n) {
+    return typeof n === "number" && n > 0;
+  }
+
+  // Validación de enteros positivos
+  if (!isPosInt(v.sim)) errs.push("Nº simulaciones debe ser un entero positivo");
+  if (!isPosInt(v.days)) errs.push("Días a simular debe ser un entero positivo");
+  if (!isPosInt(v.review)) errs.push("Días de revisión inventario debe ser un entero positivo");
+  if (!isPosInt(v.uMin)) errs.push("Mínimo del intervalo uniforme debe ser un entero positivo");
+  if (!isPosInt(v.uMax)) errs.push("Máximo del intervalo uniforme debe ser un entero positivo");
+
+  // Validación de números positivos (decimales permitidos)
+  if (!isPosNumber(v.cap)) errs.push("Capacidad bodega debe ser un número positivo");
+  if (!(v.cOrder >= 0)) errs.push("Costo ordenar debe ser cero o positivo");
+  if (!isPosNumber(v.cInv)) errs.push("Costo inventario/Kg debe ser un número positivo");
+  if (!isPosNumber(v.cAcq)) errs.push("Costo adquisición/Kg debe ser un número positivo");
+  if (!isPosNumber(v.pSale)) errs.push("Precio venta/Kg debe ser un número positivo");
+  if (!isPosNumber(v.lambda)) errs.push("Media exponencial (λ) debe ser un número mayor a 0");
+
+  // Validación de intervalo uniforme
+  if (v.uMin > v.uMax) errs.push("El mínimo no puede ser mayor que el máximo en el intervalo uniforme");
+  if (v.uMin > v.days) errs.push("El mínimo del intervalo uniforme no puede superar los días simulados");
+  if (v.uMax > v.days) errs.push("El máximo del intervalo uniforme no puede superar los días simulados");
+
+  return errs;
+}
+
+
+
+    // Inputs
+    const sim=document.getElementById("inputSim");
+    const days=document.getElementById("inputDays");
+    const cap=document.getElementById("inputCap");
+    const cOrder=document.getElementById("inputCord");
+    const cInv=document.getElementById("inputCui");
+    const cAcq=document.getElementById("inputCua");
+    const pSale=document.getElementById("inputPuv");
+    const lambda=document.getElementById("inputLambda");
+    const review=document.getElementById("inputReview");
+    const uMin=document.getElementById("inputUniformMin");
+    const uMax=document.getElementById("inputUniformMax");
+
+    document.getElementById("run").addEventListener("click",()=>{
+      
+
+      const v = {
+  sim: Number(sim.value),
+  days: Number(days.value),
+cap:parseFloat(cap.value),
+        cOrder:parseFloat(cOrder.value),
+        cInv:parseFloat(cInv.value),
+        cAcq:parseFloat(cAcq.value),
+        pSale:parseFloat(pSale.value),
+        lambda:parseFloat(lambda.value),
+  review: Number(review.value),
+  uMin: Number(uMin.value),
+  uMax: Number(uMax.value)
+};
+
+
+
+// Helper para validar números positivos (decimales incluidos)
+  function isPosNumber(n) {
+    return typeof n === "number" && n > 0;
+  }
+
+
+      const errs=validate(v);
+      const errDiv=document.getElementById("errorMsg");
+      if(errs.length){ errDiv.style.display="block"; errDiv.textContent=errs.join(". "); return;}
+      else{ errDiv.style.display="none"; }
+
+      const tbody=document.querySelector("#resultsTable tbody");
+      tbody.innerHTML="";
+      let gCTOT=0,gGNETA=0,gDIT=0;
+
+      for(let s=1;s<=v.sim;s++){
+        let CD=0,TENT=0,PAZU=0;
+        let IAZU=v.cap;
+        let CTADQ=v.cap*v.cAcq; // ya arrancamos con stock lleno
+        let CORDT=v.cOrder;     // ya hubo un primer pedido
+        let CTIN=0,DIT=0,IBRU=0;
+
+        while(CD<v.days){
+          CD++;
+          if(TENT===0){
+            if(CD%v.review===0){
+              PAZU=v.cap-IAZU;
+              CORDT+=v.cOrder;
+              CTADQ+=PAZU*v.cAcq;
+              TENT=uniformInt(v.uMin,v.uMax);
+            }else{
+              let DAZU=Math.round(expDemand(v.lambda));
+              if(DAZU>IAZU){
+                DIT+=DAZU-IAZU;
+                IBRU+=IAZU*v.pSale;
+                IAZU=0;
+              }else{
+                IBRU+=DAZU*v.pSale;
+                IAZU-=DAZU;
+                CTIN+=IAZU*v.cInv;
+              }
+            }
+          }else{
+            TENT--;
+            if(TENT===0){
+              IAZU+=PAZU;
+            }
+            let DAZU=Math.round(expDemand(v.lambda));
+            if(DAZU>IAZU){
+              DIT+=DAZU-IAZU;
+              IBRU+=IAZU*v.pSale;
+              IAZU=0;
+            }else{
+              IBRU+=DAZU*v.pSale;
+              IAZU-=DAZU;
+              CTIN+=IAZU*v.cInv;
+            }
+          }
+        }
+
+        const CTOT=CTADQ+CTIN+CORDT;
+        const GNETA=IBRU-CTOT;
+        gCTOT+=CTOT; gGNETA+=GNETA; gDIT+=DIT;
+
+        const row=`<tr>
+          <td>${s}</td>
+          <td>${CTOT.toFixed(2)}</td>
+          <td>${GNETA.toFixed(2)}</td>
+          <td>${DIT.toFixed(2)}</td>
+          <td>${CTADQ.toFixed(2)}</td>
+          <td>${CTIN.toFixed(2)}</td>
+          <td>${CORDT.toFixed(2)}</td>
+        </tr>`;
+        tbody.insertAdjacentHTML("beforeend",row);
+      }
+
+      // Mostrar resumen global
+      document.getElementById("globalSummary").style.display="block";
+      document.getElementById("avgCTOT").textContent=`Costo total promedio: ${(gCTOT/v.sim).toFixed(2)} Bs`;
+      document.getElementById("avgGNETA").textContent=`Ganancia neta promedio: ${(gGNETA/v.sim).toFixed(2)} Bs`;
+      document.getElementById("avgDIT").textContent=`Demanda insatisfecha promedio: ${(gDIT/v.sim).toFixed(2)} Kg`;
+    });
+
+    document.getElementById("clear").addEventListener("click",()=>{
+      document.querySelector("#resultsTable tbody").innerHTML="<tr><td colspan='7'>Sin datos</td></tr>";
+      document.getElementById("globalSummary").style.display="none";
+    });
+  </script>
+</body>
+</html>

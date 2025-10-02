@@ -9,14 +9,17 @@
 </head>
 <body>
 
- <nav>
+<nav>
     <a href="index.html">Inicio</a>
+     <a href="Interes.html">Interes Fijo</a>
+    <a href="InteresVar.html">Interes Variable</a>
     <a href="Dados.html">Dados</a>
-    <a href="Articulos.html">Articulos</a>
+    <a href="Articulos.html">Tienda</a>
     <a href="Huevos.html">Huevos</a>
+    <a href="Azucar.html">Azúcar</a>
   </nav>
 <main>
-  <h1>Simulador Granjero — Huevos y Pollos 🐣</h1>
+  <h1>🐣 Simulador Granjero — Huevos y Pollos </h1>
 
   <div class="layout">
     <!-- Panel de entradas -->
@@ -196,23 +199,42 @@ function sampleFromIntervals(rows){
 /* ===== validaciones de entradas ===== */
 function validateInputs(values){
   const err = [];
-  if(!Number.isInteger(values.sim) || values.sim <= 0) err.push("⚠️ Nº simulaciones debe ser entero positivo.");
-  if(!Number.isInteger(values.days) || values.days <= 0) err.push("⚠️ Nº días debe ser entero positivo.");
-  if(!(values.lambda > 0)) err.push("⚠️ Lambda (media Poisson) debe ser > 0.");
-  if(!(values.eggPrice >= 0) || !(values.chickPrice >= 0)) err.push("⚠️ Los precios deben ser >= 0.");
-  // probabilidades
-  const sumEgg = Number(values.pBroken) + Number(values.pHatch) + Number(values.pRemain);
-  if(Math.abs(sumEgg - 1) > 1e-6) err.push("⚠️ La suma de probabilidades de estado del huevo debe ser 1.");
-  const sumChick = Number(values.pDie) + Number(values.pSurvive);
-  if(Math.abs(sumChick - 1) > 1e-6) err.push("⚠️ La suma de probabilidades del pollo (muere/sobrevive) debe ser 1.");
+  
+  if (!(typeof values.sim === "number" && Number.isInteger(values.sim) && values.sim > 0)) 
+    err.push("⚠️ Nº simulaciones debe ser entero positivo.");
+
+  if (!(typeof values.days === "number" && Number.isInteger(values.days) && values.days > 0)) 
+    err.push("⚠️ Nº días debe ser entero positivo.");
+
+  if (!(typeof values.lambda === "number" && values.lambda > 0)) 
+    err.push("⚠️ Lambda (media Poisson) debe ser > 0.");
+
+  if (!(typeof values.eggPrice === "number" && values.eggPrice >= 0)) 
+    err.push("⚠️ Precio por huevo debe ser >= 0.");
+
+  if (!(typeof values.chickPrice === "number" && values.chickPrice >= 0)) 
+    err.push("⚠️ Precio por pollo debe ser >= 0.");
+
+  // probabilidades de huevos
+  const sumEgg = values.pBroken + values.pHatch + values.pRemain;
+  if (Math.abs(sumEgg - 1) > 1e-6) 
+    err.push("⚠️ La suma de probabilidades de estado del huevo debe ser 1.");
+
+  // probabilidades de pollos
+  const sumChick = values.pDie + values.pSurvive;
+  if (Math.abs(sumChick - 1) > 1e-6) 
+    err.push("⚠️ La suma de probabilidades del pollo (muere/sobrevive) debe ser 1.");
+
   return err;
 }
+
 
 /* ===== evento simular ===== */
 document.getElementById("run").addEventListener("click", () => {
   // leer inputs
-  const sim = parseInt(document.getElementById("inputSim").value,10);
-  const days = parseInt(document.getElementById("inputDays").value,10);
+const sim = Number(document.getElementById("inputSim").value);
+const days = Number(document.getElementById("inputDays").value);
+
   const lambda = parseFloat(document.getElementById("inputLambda").value);
   const eggPrice = parseFloat(document.getElementById("inputEggPrice").value);
   const chickPrice = parseFloat(document.getElementById("inputChickPrice").value);
