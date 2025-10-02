@@ -73,7 +73,10 @@
         alert("⚠️ El número de simulaciones y juegos debe ser entero.");
         return false;
       }
-     
+      if ( isNaN(simulaciones) || isNaN(precio) || isNaN(premio) || isNaN(juegos)) {
+        alert("Todos los campos deben ser números.");
+        return false;
+      }
       return true;
     }
 
