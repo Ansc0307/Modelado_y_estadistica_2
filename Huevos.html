@@ -21,7 +21,7 @@
   <div class="layout">
     <!-- Panel de entradas -->
     <div class="card panel">
-      <h3>Parámetros</h3>
+      <h3>⚙️ Parámetros</h3>
 
       <label>Nº simulaciones</label>
       <input id="inputSim" type="number" min="1" value="100" />
@@ -84,15 +84,15 @@
 
     <!-- Panel resultados -->
     <div class="card results">
-      <h3>Resultados por simulación</h3>
+      <h3>📋 Resultados</h3>
 
       <div class="table-wrap">
         <table id="resultsTable">
           <thead>
             <tr>
               <th>Simulación</th>
-              <th>Ingreso neto total ($)</th>
-              <th>Ingreso promedio diario ($)</th>
+              <th>Ingreso neto total</th>
+              <th>Ingreso promedio diario</th>
               <th>Huevos que permanecen</th>
               <th>Huevos rotos</th>
               <th>Pollos sobreviven</th>
@@ -105,12 +105,21 @@
         </table>
       </div>
 
-      <div id="globalSummary" class="summary">
-        Promedios generales: Ingreso total promedio = 0 $, Ingreso diario promedio = 0 $, Huevos quedan = 0, Huevos rotos = 0, Pollos sobreviven = 0, Pollos mueren = 0
-      </div>
+     <div id="globalSummary" class="summary-box" style="display: none;">
+
+      
+  <h2><span class="icon">📊</span> Promedios Generales</h2>
+  <p>Ingreso total promedio: <strong>0 $</strong></p>
+  <p>Ingreso diario promedio: <strong>0 $</strong></p>
+  <p>Huevos sobreviven: <strong>0</strong></p>
+  <p>Huevos rotos: <strong>0</strong></p>
+  <p>Pollos sobreviven: <strong>0</strong></p>
+  <p>Pollos mueren: <strong>0</strong></p>
+  <p>(Se redondearon los huevos y pollos)</p>
+</div>
 
             <div class="poisson-card" id="poissonBlock">
-        <h4>Tabla Poisson (intervalos) — λ = <span id="lambdaVal">-</span></h4>
+        <h4>Tabla Poisson  (intervalos) — λ = <span id="lambdaVal">-</span></h4>
         <div style="margin-bottom:8px; font-size:14px; color:#333;">
           Fórmula: <b>P(X=k) = (e<sup>-λ</sup> · λ<sup>k</sup>) / k!</b>
         </div>
@@ -187,15 +196,15 @@ function sampleFromIntervals(rows){
 /* ===== validaciones de entradas ===== */
 function validateInputs(values){
   const err = [];
-  if(!Number.isInteger(values.sim) || values.sim <= 0) err.push("Nº simulaciones debe ser entero positivo.");
-  if(!Number.isInteger(values.days) || values.days <= 0) err.push("Nº días debe ser entero positivo.");
-  if(!(values.lambda > 0)) err.push("Lambda (media Poisson) debe ser > 0.");
-  if(!(values.eggPrice >= 0) || !(values.chickPrice >= 0)) err.push("Los precios deben ser >= 0.");
+  if(!Number.isInteger(values.sim) || values.sim <= 0) err.push("⚠️ Nº simulaciones debe ser entero positivo.");
+  if(!Number.isInteger(values.days) || values.days <= 0) err.push("⚠️ Nº días debe ser entero positivo.");
+  if(!(values.lambda > 0)) err.push("⚠️ Lambda (media Poisson) debe ser > 0.");
+  if(!(values.eggPrice >= 0) || !(values.chickPrice >= 0)) err.push("⚠️ Los precios deben ser >= 0.");
   // probabilidades
   const sumEgg = Number(values.pBroken) + Number(values.pHatch) + Number(values.pRemain);
-  if(Math.abs(sumEgg - 1) > 1e-6) err.push("La suma de probabilidades de estado del huevo debe ser 1.");
+  if(Math.abs(sumEgg - 1) > 1e-6) err.push("⚠️ La suma de probabilidades de estado del huevo debe ser 1.");
   const sumChick = Number(values.pDie) + Number(values.pSurvive);
-  if(Math.abs(sumChick - 1) > 1e-6) err.push("La suma de probabilidades del pollo (muere/sobrevive) debe ser 1.");
+  if(Math.abs(sumChick - 1) > 1e-6) err.push("⚠️ La suma de probabilidades del pollo (muere/sobrevive) debe ser 1.");
   return err;
 }
 
@@ -331,13 +340,24 @@ document.getElementById("run").addEventListener("click", () => {
   const globalSim = sim;
   const gTotalAvg = (sumTotalIncome / globalSim).toFixed(2);
   const gDailyAvg = (sumDailyAvg / globalSim).toFixed(2);
-  const gEggRemain = (sumEggRemain / globalSim).toFixed(2);
-  const gEggBroken = (sumEggBroken / globalSim).toFixed(2);
-  const gChickAlive = (sumChickAlive / globalSim).toFixed(2);
-  const gChickDead = (sumChickDead / globalSim).toFixed(2);
+ const gEggRemain = Math.round(sumEggRemain / globalSim);
+const gEggBroken = Math.round(sumEggBroken / globalSim);
+const gChickAlive = Math.round(sumChickAlive / globalSim);
+const gChickDead = Math.round(sumChickDead / globalSim);
 
-  document.getElementById("globalSummary").textContent =
-    `Promedios generales (por simulación): Ingreso total promedio = ${gTotalAvg} $, Ingreso diario promedio = ${gDailyAvg} $, Huevos que permanecen = ${gEggRemain}, Huevos rotos = ${gEggBroken}, Pollos sobreviven = ${gChickAlive}, Pollos mueren = ${gChickDead}`;
+
+  const summaryDiv = document.getElementById("globalSummary");
+summaryDiv.style.display = "block"; // mostrarlo si estaba oculto
+summaryDiv.innerHTML = `<h2><span class="icon">📊</span> Promedios Generales</h2>
+  <p>Ingreso total promedio: <strong>${gTotalAvg} </strong></p>
+  <p>Ingreso diario promedio: <strong>${gDailyAvg} </strong></p>
+  <p>Huevos sobreviven: <strong>${gEggRemain}</strong></p>
+  <p>Huevos rotos: <strong>${gEggBroken}</strong></p>
+  <p>Pollos sobreviven: <strong>${gChickAlive}</strong></p>
+  <p>Pollos mueren: <strong>${gChickDead}</strong></p>
+  <p><em>(Se redondearon los huevos y pollos)</em></p>`;
+
+
 });
 
 /* ===== limpiar campos y resultados ===== */
@@ -355,9 +375,12 @@ document.getElementById("clear").addEventListener("click", () => {
   document.getElementById("pSurvive").value = "0.8";
 
   document.querySelector("#resultsTable tbody").innerHTML = `<tr><td colspan="7">Sin datos — presiona <b>Simular</b></td></tr>`;
-  document.getElementById("globalSummary").textContent =
-    "Promedios generales: Ingreso total promedio = 0 $, Ingreso diario promedio = 0 $, Huevos quedan = 0, Hueos rotos = 0, Pollos sobreviven = 0, Pollos mueren = 0";
-  document.querySelector("#poissonTable tbody").innerHTML = `<tr><td colspan="4">Sin calcular</td></tr>`;
+const summaryDiv = document.getElementById("globalSummary");
+summaryDiv.style.display = "none";
+summaryDiv.innerHTML = ""; // o puedes dejar el HTML inicial si prefieres
+
+  
+    document.querySelector("#poissonTable tbody").innerHTML = `<tr><td colspan="4">Sin calcular</td></tr>`;
   document.getElementById("lambdaVal").textContent = "-";
   document.getElementById("errorMsg").style.display = "none";
 });

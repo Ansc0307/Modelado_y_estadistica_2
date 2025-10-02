@@ -119,20 +119,20 @@
 
       // Validaciones
       if (isNaN(hours) || isNaN(simulations) || isNaN(costFixed) || isNaN(costArticle) || isNaN(priceArticle) || probs.some(p => isNaN(p))) {
-        alert("Todos los campos deben ser números.");
+        alert("⚠️ Todos los campos deben ser llenados con números.");
         return;
       }
       if (hours <= 1 || simulations <= 1 || costFixed <= 0 || costArticle <= 0 || priceArticle <= 0) {
-        alert("Todos los valores deben ser positivos.(La canitdad de simulaciones y horas debe ser mayor q 0)");
+        alert("⚠️ Todos los valores deben ser positivos.(La canitdad de simulaciones y horas debe ser mayor q 0)");
         return;
       }
       if (!Number.isInteger(hours) || !Number.isInteger(simulations)) {
-        alert("Las horas y simulaciones deben ser enteros.");
+        alert("⚠️ Las horas y simulaciones deben ser enteros.");
         return;
       }
       const probSum = probs.reduce((a,b) => a+b, 0);
       if (Math.abs(probSum - 1) > 0.001) {
-        alert("La suma de probabilidades debe ser igual a 1.");
+        alert("⚠️ La suma de probabilidades debe ser igual a 1.");
         return;
       }
 
